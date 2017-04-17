@@ -126,11 +126,14 @@ export default class Compilation {
       await Promise.all(file.imports.map(item =>
         this.processFileTree(item, files, oldFiles, useCache, false, tickCallback)
       ))
-      await Promise.all(file.chunks.map(item =>
-        Promise.all(item.imports.map(importEntry =>
+      await Promise.all(file.chunks.map(item => {
+        if (!item) {
+          return Promise.all([])
+        }
+        return Promise.all(item.imports.map(importEntry =>
           this.processFileTree(importEntry, files, oldFiles, useCache, false, tickCallback)
         ))
-      ))
+      }))
     } catch (error) {
       if (oldFile) {
         files.set(resolved, oldFile)
@@ -217,14 +220,14 @@ export default class Compilation {
       }
     }
     const tickCallback = async (oldFile: ?File, file: File) => {
-      const oldChunks = oldFile ? oldFile.chunks : []
-      const newChunks = file.chunks
+      const oldChunks = oldFile ? oldFile.chunks || [] : []
+      const newChunks = file ? file.chunks || [] : []
       const addedChunks = differenceBy(newChunks, oldChunks, serializeChunk)
       const removedChunks = differenceBy(oldChunks, newChunks, serializeChunk)
       const unchangedChunks = oldChunks.filter(chunk => !~removedChunks.indexOf(chunk))
 
-      const oldImports = oldFile ? oldFile.imports : []
-      const newImports = file.imports
+      const oldImports = oldFile ? oldFile.imports || [] : []
+      const newImports = file ? file.imports || [] : []
       const addedImports = differenceBy(newImports, oldImports, serializeImport)
       const removedImports = differenceBy(oldImports, newImports, serializeImport)
 

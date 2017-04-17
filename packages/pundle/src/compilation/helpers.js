@@ -7,6 +7,9 @@ export function serializeImport(fileImport: FileImport): string {
 }
 
 export function serializeChunk(fileChunk: FileChunk): string {
+  if (!fileChunk) {
+    return JSON.stringify({ imports: '', entries: '' })
+  }
   const imports = fileChunk.imports.map(serializeImport)
   const entries = fileChunk.entries.map(serializeImport)
   return JSON.stringify({ imports, entries })
